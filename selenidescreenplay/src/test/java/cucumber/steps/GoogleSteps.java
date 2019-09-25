@@ -23,6 +23,7 @@ import static net.serenitybdd.screenplay.Tasks.instrumented;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class GoogleSteps {
 
@@ -43,7 +44,7 @@ public class GoogleSteps {
 
     @Then("^(.*) opens the first link on search results page$")
     public void he_opens_the_first_link_on_search_results_page(String actorName) {
-        theActorCalled(actorName).wasAbleTo(Click.on(SearchedResult.SEARCHED_RESULT_CAPTION));
+        theActorCalled(actorName).attemptsTo(Click.on(SearchedResult.SEARCHED_RESULT_CAPTION));
     }
 
     @Then("^(.*) can see that title contains (.*) searched word$")
@@ -56,32 +57,23 @@ public class GoogleSteps {
             String actorName, String lookingForDomain, int toPage) {
         int currentPage = 1;
         Optional<String> result = Optional.empty();
-        System.out.println(" ==== 1");
-//        while (currentPage < toPage && !result.isPresent()) {
-        List<String> pageResult = ResultsOnThePage.allResults().answeredBy(theActorCalled(actorName));
-        System.out.println(" ==== 2");
-        System.out.println(pageResult.toString());
-        result = Utils.searchOnThePage(pageResult, lookingForDomain);
-        System.out.println(" ==== 3 " + result.isPresent());
-        if (result.isPresent()) {
-            System.out.println("page is: " + currentPage);
-            System.out.println(result.toString());
-        }
-////            NextPage
-        Scroll.to(SearchedResult.NEXT_PAGE);
-        System.out.println(" ==== 4");
+        while (currentPage <= toPage && !result.isPresent()) {
+            List<String> pageResult = ResultsOnThePage.allResults().answeredBy(theActorCalled(actorName));
+            result = Utils.searchOnThePage(pageResult, lookingForDomain);
+            if (result.isPresent()) {
+                System.out.println("page is: " + currentPage);
+                System.out.println(result.toString());
+            }
+            theActorCalled(actorName).attemptsTo(Scroll.to(SearchedResult.NEXT_PAGE));
 
-        Integer orderNumber = ResultsOnThePage.currentPageNumber().answeredBy(theActorCalled(actorName));
-        System.out.println("Current page before is: " + orderNumber);
-        orderNumber++;
-        Click.on(SearchedResult.NEXT_PAGE);
-        System.out.println("============!!!!!!!!!!!!!!!!!!!!!!!!");
-        seeThat(ResultsOnThePage.currentPageNumber(), is(orderNumber.toString()));
-        currentPage = ResultsOnThePage.currentPageNumber().answeredBy(theActorCalled(actorName));
-        System.out.println("=========+++++ " + currentPage);
-//        }
-//        return result;
-//        seeThat(lookingForDomain + " on " + currentPage, is())
+            Integer orderNumber = ResultsOnThePage.currentPageNumber().answeredBy(theActorCalled(actorName));
+            orderNumber++;
+            theActorCalled(actorName).attemptsTo(Click.on(SearchedResult.NEXT_PAGE));
+            seeThat(ResultsOnThePage.currentPageNumber(), is(orderNumber.toString()));
+            currentPage = ResultsOnThePage.currentPageNumber().answeredBy(theActorCalled(actorName));
+        }
+        assertThat("Not found " + lookingForDomain + " domain on 1-" + toPage + " page(s)",
+                result.isPresent(), is(true));
     }
 
 }
