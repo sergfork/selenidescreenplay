@@ -15,9 +15,8 @@
         <serenity.cucumber.version>1.0.21</serenity.cucumber.version>
         <maven-surefire-plugin.version>2.21.0</maven-surefire-plugin.version>
         <cucumber.version>4.2.0</cucumber.version>
-
-        <webdriver.driver>chrome</webdriver.driver>
-        <webdriver.chrome.driver>src/test/resources/drivers/chromedriver</webdriver.chrome.driver>
+        <browser>chrome</browser>
+        <parallel.tests>2</parallel.tests>
     </properties>
 
     <dependencies>
@@ -78,6 +77,11 @@
             <version>3.6.2</version>
         </dependency>
         <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>3.7.1</version>
+        </dependency>
+        <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-zalenium</artifactId>
             <version>${serenity.version}</version>
@@ -94,14 +98,20 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>3.0.0-M3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit47</artifactId>
+                        <version>3.0.0-M3</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <testFailureIgnore>true</testFailureIgnore>
-                    <parallel>suites</parallel>
-                    <threadCount>2</threadCount>
-                    <perCoreThreadCount>false</perCoreThreadCount>
-                    <!--<parallel>both</parallel>-->
-                    <!--<threadCount>2</threadCount>-->
+                    <parallel>methods</parallel>
+                    <threadCount>${parallel.tests}</threadCount>
+                    <systemPropertyVariables>
+                        <browser>${browser}</browser>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 
@@ -134,18 +144,38 @@
 
     <profiles>
         <profile>
-            <id>linux-chrome</id>
+            <id>local</id>
             <properties>
-                <webdriver.driver>chrome</webdriver.driver>
-                <webdriver.chrome.driver>src/test/resources/drivers/chromedriver</webdriver.chrome.driver>
+                <browser>chrome</browser>
+                <webdriver.driver>provided</webdriver.driver>
+                <webdriver.provided.type>mydriver</webdriver.provided.type>
+                <webdriver.provided.mydriver>driverutil.DriverFactory</webdriver.provided.mydriver>
             </properties>
-        </profile>
-        <profile>
-            <id>win-chrome</id>
-            <properties>
-                <webdriver.driver>chrome</webdriver.driver>
-                <webdriver.chrome.driver>src/test/resources/drivers/chromedriver.exe</webdriver.chrome.driver>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.0.0-M3</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.maven.surefire</groupId>
+                                <artifactId>surefire-junit47</artifactId>
+                                <version>3.0.0-M3</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <browser>${browser}</browser>
+                                <webdriver.driver>${webdriver.driver}</webdriver.driver>
+                                <webdriver.provided.type>${webdriver.provided.type}</webdriver.provided.type>
+                                <webdriver.provided.mydriver>${webdriver.provided.mydriver}
+                                </webdriver.provided.mydriver>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
