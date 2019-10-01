@@ -21,6 +21,7 @@ import java.util.Optional;
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorCalled;
+import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,18 +38,18 @@ public class GoogleSteps {
         theActorCalled(actorName).wasAbleTo(instrumented(OpenTheApplication.class));
     }
 
-    @When("^(.*) searches by (.*)$")
-    public void he_searches_by(String actorName, String searchTerm) {
-        theActorCalled(actorName).wasAbleTo(Search.forTheTerm(searchTerm));
+    @When("^he searches by (.*)$")
+    public void he_searches_by(String searchTerm) {
+        theActorInTheSpotlight().wasAbleTo(Search.forTheTerm(searchTerm));
     }
 
-    @Then("^(.*) opens the first link on search results page$")
-    public void he_opens_the_first_link_on_search_results_page(String actorName) {
-        theActorCalled(actorName).attemptsTo(Click.on(SearchedResult.SEARCHED_RESULT_CAPTION));
+    @Then("^he opens the first link on search results page$")
+    public void he_opens_the_first_link_on_search_results_page() {
+        theActorInTheSpotlight().attemptsTo(Click.on(SearchedResult.SEARCHED_RESULT_CAPTION));
     }
 
-    @Then("^(.*) can see that title contains (.*) searched word$")
-    public void title_contains_automation_searched_word(String actorName, String searchedWord) {
+    @Then("^he can see that title contains (.*) searched word$")
+    public void title_contains_automation_searched_word(String searchedWord) {
         seeThat(TheWebPage.title(), containsString(searchedWord));
     }
 
